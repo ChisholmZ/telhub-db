@@ -15,7 +15,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 set -e
 
-echo "[Entrypoint] MySQL Docker Image 8.0.15-1.1.10"
+echo "[Entrypoint] MySQL Docker Image 5.7.25-1.1.10"
 # Fetch value from server config
 # We use mysqld --verbose --help instead of my_print_defaults because the
 # latter only show values present in config files, and not server defaults
@@ -46,7 +46,7 @@ if [ "$1" = 'mysqld' ]; then
 	DATADIR="$(_get_config 'datadir' "$@")"
 	SOCKET="$(_get_config 'socket' "$@")"
 
-	if [ -n "$MYSQL_LOG_CONSOLE" ] || [ -n "console" ]; then
+	if [ -n "$MYSQL_LOG_CONSOLE" ] || [ -n "" ]; then
 		# Don't touch bind-mounted config files
 		if ! cat /proc/1/mounts | grep "etc/my.cnf"; then
 			sed -i 's/^log-error=/#&/' /etc/my.cnf
@@ -102,7 +102,7 @@ if [ "$1" = 'mysqld' ]; then
 		fi
 
 		mysql_tzinfo_to_sql /usr/share/zoneinfo | "${mysql[@]}" mysql
-
+		
 		if [ ! -z "$MYSQL_RANDOM_ROOT_PASSWORD" ]; then
 			MYSQL_ROOT_PASSWORD="$(pwmake 128)"
 			echo "[Entrypoint] GENERATED ROOT PASSWORD: $MYSQL_ROOT_PASSWORD"
@@ -136,7 +136,7 @@ EOF
 		fi
 
 		if [ "$MYSQL_USER" -a "$MYSQL_PASSWORD" ]; then
-			echo "CREATE USER '"$MYSQL_USER"'@'%' IDENTIFIED WITH mysql_native_password BY '"$MYSQL_PASSWORD"' ;" | "${mysql[@]}"
+			echo "CREATE USER '"$MYSQL_USER"'@'%' IDENTIFIED BY '"$MYSQL_PASSWORD"' ;" | "${mysql[@]}"
 
 			if [ "$MYSQL_DATABASE" ]; then
 				echo "GRANT ALL ON \`"$MYSQL_DATABASE"\`.* TO '"$MYSQL_USER"'@'%' ;" | "${mysql[@]}"
@@ -202,7 +202,8 @@ password=healthcheckpass
 EOF
 	touch /mysql-init-complete
 	chown -R mysql:mysql "$DATADIR"
-	echo "[Entrypoint] Starting MySQL 8.0.15-1.1.10"
+	echo "[Entrypoint] Starting MySQL 5.7.25-1.1.10"
 fi
 
 exec "$@"
+
