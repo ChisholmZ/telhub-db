@@ -4,5 +4,5 @@
 
 source telhub.sh
 
-POD=$(getPod)
-kubectl cp $POD:/var/lib/mysql ./
+CON=$(getCon)
+docker cp $CON:/var/lib/mysql ./
