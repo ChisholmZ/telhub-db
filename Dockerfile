@@ -21,20 +21,27 @@ ARG MYSQL_SHELL_PACKAGE=mysql-shell-8.0.15
 RUN yum install -y https://repo.mysql.com/mysql-community-minimal-release-el7.rpm \
       https://repo.mysql.com/mysql-community-release-el7.rpm \
   && yum-config-manager --enable mysql57-server-minimal \
-  && yum install -y \
+  && yum install -y vim \
       $MYSQL_SERVER_PACKAGE \
       $MYSQL_SHELL_PACKAGE \
       libpwquality \
   && yum clean all \
   && mkdir /docker-entrypoint-initdb.d
 
-VOLUME /var/lib/mysql
+# VOLUME /var/lib/mysql
 
 COPY docker-entrypoint.sh /entrypoint.sh
 COPY healthcheck.sh /healthcheck.sh
 COPY load_sql.sh /load_sql.sh
+COPY lifecycle.sh /lifecycle.sh
+# COPY mysql /var/lib/mysql
+
 ENTRYPOINT ["/entrypoint.sh"]
 HEALTHCHECK CMD /healthcheck.sh
 EXPOSE 3306 33060
+
+# RUN rm -rf /var/lib/mysql/telhub && ln -s /telhub /var/lib/mysql/telhub && sleep 10
+# RUN mkdir /mysql && chown -R mysql:mysql /mysql
+
 CMD ["mysqld"]
-RUN chmod +x /load_sql.sh && /load_sql.sh restore
+# CMD ["sh lifecycle.sh"]
